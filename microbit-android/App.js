@@ -33,8 +33,13 @@ export default function App() {
     }
     try {
       const res = await PermissionsAndroid.requestMultiple(perms);
-      const ok = Object.values(res).every(v => v === PermissionsAndroid.RESULTS.GRANTED);
-      if (!ok) Alert.alert('Permissions', 'Required permissions not granted');
+      const denied = Object.entries(res)
+        .filter(([_, value]) => value !== PermissionsAndroid.RESULTS.GRANTED)
+        .map(([key]) => key);
+      const ok = denied.length === 0;
+      if (!ok) {
+        Alert.alert('Permissions', `Required permissions not granted: ${denied.join(', ')}`);
+      }
       return ok;
     } catch (e) {
       Alert.alert('Permission error', e.message);
