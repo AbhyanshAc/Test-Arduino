@@ -1,5 +1,23 @@
-# Test-Arduino
+# Test-Arduino:
 A Test Code made to test USB Serial Communication between Android and Arduino while using Expo
 
-Issue: 
-- The only issue is that the app doesn't wait after permission for USB Serial is given and immediately gives a no permission error. The user usually disconnects and reconnects to make it work, which does work.
+# Arduino Sketch:
+const int LED = 13;
+
+void setup() {
+  pinMode(LED, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  if (Serial.available()) {
+    String cmd = Serial.readStringUntil('\n');
+    cmd.trim();
+
+    if (cmd == "ON")
+      digitalWrite(LED, HIGH);
+
+    if (cmd == "OFF")
+      digitalWrite(LED, LOW);
+  }
+}
