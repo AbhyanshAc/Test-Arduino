@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+
+# Expo / React Native generated files
+.expo/
+.expo-shared/
+.android/
+.ios/
+android/.gradle/
+android/app/build/
+android/build/
+android/.idea/
+android/local.properties
+android/.project
+android/.settings/
+android/.classpath
+android/app/.cxx/
+android/app/src/main/assets/index.android.bundle
+android/app/src/main/assets/index.bundle
+android/app/src/main/res/values/strings.xml
+android/app/src/main/res/values/styles.xml
+android/app/src/main/res/values/colors.xml
+android/app/src/main/res/values-night/
+android/app/src/main/AndroidManifest.xml
+android/app/src/main/jniLibs/
+android/app/src/main/assets/
+android/app/src/main/res/drawable-*/
+android/app/src/main/res/mipmap-*/
+android/app/src/main/res/raw/
+android/app/src/main/res/xml/
+android/gradle.properties
+android/app/google-services.json
+android/app/debug.keystore
+android/app/release.keystore
+android/keystores/
+android/app/src/debug/
+android/app/src/release/
+
+# iOS
+ios/Pods/
+ios/Podfile.lock
+ios/*.xcworkspace
+ios/*.xcodeproj
+ios/DerivedData/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+coverage/
+*.tsbuildinfo

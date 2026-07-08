@@ -3,6 +3,10 @@ import {SafeAreaView, View, Text, Button, StyleSheet, Alert, PermissionsAndroid,
 import {BleManager} from 'react-native-ble-plx';
 import {Buffer} from 'buffer';
 
+if (typeof global.Buffer === 'undefined') {
+  global.Buffer = Buffer;
+}
+
 const LED_SERVICE_UUID = 'E95DD91D-251D-470A-A062-FA1922DFA9A8'.toLowerCase();
 const LED_MATRIX_CHAR = 'E95D7B77-251D-470A-A062-FA1922DFA9A8'.toLowerCase();
 
