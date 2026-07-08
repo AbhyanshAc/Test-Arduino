@@ -34,6 +34,11 @@ android/app/debug.keystore
 android/app/release.keystore
 android/keystores/
 android/app/src/debug/
+!android/app/src/debug/
+!android/app/src/debug/java/
+!android/app/src/debug/java/com/
+!android/app/src/debug/java/com/microbitandroid/
+!android/app/src/debug/java/com/microbitandroid/ReactNativeFlipper.java
 android/app/src/release/
 
 # iOS
