@@ -3,10 +3,17 @@
     "name": "microbit-android",
     "slug": "microbit-android",
     "version": "0.0.1",
-    "sdkVersion": "48.0.0",
-    "platforms": [
-      "ios",
-      "android"
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "minSdkVersion": 26
+          }
+        }
+      ]
     ],
     "android": {
       "package": "com.anonymous.microbitandroid"
