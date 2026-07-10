@@ -95,6 +95,7 @@ export default function App() {
   const [servicesDiscovered, setServicesDiscovered] = useState(false);
   const [hasLedService, setHasLedService] = useState(false);
   const [hasIoPinService, setHasIoPinService] = useState(false);
+  const [pinConfigured, setPinConfigured] = useState(false);
   const [screenMode, setScreenMode] = useState('scan'); // 'scan' | 'analog'
 
   // ─── Logging (mirrors showMsg pattern) ─────────────────────────────────────
@@ -269,6 +270,28 @@ export default function App() {
 
       if (ioPinServicePresent) {
         log('IO Pin Service available ✓', '#4CAF50');
+        // Configure pin 0 for digital output immediately (like microbit-blue)
+        try {
+          const adFlags = new Uint8Array([0x00]); // bit 0 = digital for pin 0
+          const adB64 = Buffer.from(adFlags).toString('base64');
+          await discoveredDev.writeCharacteristicWithResponseForService(
+            IOPINSERVICE_SERVICE_UUID,
+            PINADCONFIGURATION_CHARACTERISTIC_UUID,
+            adB64
+          );
+
+          const ioFlags = new Uint8Array([0x00]); // bit 0 = 0 = output for pin 0
+          const ioB64 = Buffer.from(ioFlags).toString('base64');
+          await discoveredDev.writeCharacteristicWithResponseForService(
+            IOPINSERVICE_SERVICE_UUID,
+            PINIOCONFIGURATION_CHARACTERISTIC_UUID,
+            ioB64
+          );
+          log('Pin 0 configured for digital output', '#4CAF50');
+          setPinConfigured(true);
+        } catch (e) {
+          log('Pin configuration error: ' + e.message, '#ff4444');
+        }
       } else {
         log('IO Pin Service NOT found on this micro:bit', '#ff4444');
       }
@@ -462,14 +485,14 @@ export default function App() {
   // Convenience: all LEDs off
   const allLedsOff = () => applyPattern([0, 0, 0, 0, 0]);
 
-  // ─── IO Pin Analog Output Control ─────────────────────────────────────────────
-  // Configure pin 0 for analog output
-  const configurePin0AnalogOutput = async () => {
+  // ─── IO Pin Digital Output Control ─────────────────────────────────────────────
+  // Configure pin 0 for digital output
+  const configurePin0DigitalOutput = async () => {
     if (!device) { log('Not connected', '#ff4444'); return false; }
 
     try {
-      // Configure pin 0 as analog (set bit 0 in PINADCONFIGURATION)
-      const adFlags = new Uint8Array([0x01]); // bit 0 = analog for pin 0
+      // Configure pin 0 as digital (clear bit 0 in PINADCONFIGURATION - 0 = digital)
+      const adFlags = new Uint8Array([0x00]); // bit 0 = digital for pin 0
       const adB64 = Buffer.from(adFlags).toString('base64');
       await device.writeCharacteristicWithResponseForService(
         IOPINSERVICE_SERVICE_UUID,
@@ -486,7 +509,7 @@ export default function App() {
         ioB64
       );
 
-      log('Pin 0 configured for analog output', '#4CAF50');
+      log('Pin 0 configured for digital output', '#4CAF50');
       return true;
     } catch (e) {
       log('Pin configuration error: ' + e.message, '#ff4444');
@@ -494,38 +517,38 @@ export default function App() {
     }
   };
 
-  // Write analog value to pin 0 (0-1023)
-  const writeAnalogValue = async (value) => {
+  // Write digital value to pin 0 (0 or 1)
+  const writeDigitalValue = async (value) => {
     if (!device) { log('Not connected', '#ff4444'); return; }
 
     try {
       // Format: [pin_number (uint8), value (uint8)]
-      // micro:bit compresses 10-bit analog values to 8 bits
-      // Convert 0-1023 to 0-255 by dividing by 4
-      const compressedValue = Math.floor(value / 4);
+      // Digital values: 0 = LOW, 1 = HIGH
       const bytes = new Uint8Array(2);
       bytes[0] = 0x00; // pin 0
-      bytes[1] = compressedValue; // compressed analog value (0-255)
+      bytes[1] = value; // digital value (0 or 1)
       const b64 = Buffer.from(bytes).toString('base64');
+      log(`Writing: pin=0, digital value=${value}, bytes=[${bytes[0]}, ${bytes[1]}]`, '#888');
       await device.writeCharacteristicWithResponseForService(
         IOPINSERVICE_SERVICE_UUID,
         PINDATA_CHARACTERISTIC_UUID,
         b64
       );
-      log(`Pin 0 analog value set to ${value} (compressed: ${compressedValue})`, '#4CAF50');
+      log(`Pin 0 digital value set to ${value}`, '#4CAF50');
     } catch (e) {
-      log('Analog write error: ' + e.message, '#ff4444');
+      log('Digital write error: ' + e.message, '#ff4444');
+      log('Error details: ' + JSON.stringify(e), '#ff4444');
     }
   };
 
-  // Set pin 0 to maximum (1023)
+  // Set pin 0 to HIGH (1) - turns relay OFF
   const setPin0Max = async () => {
-    await writeAnalogValue(1023);
+    await writeDigitalValue(1);
   };
 
-  // Set pin 0 to minimum (0)
+  // Set pin 0 to LOW (0) - turns relay ON
   const setPin0Min = async () => {
-    await writeAnalogValue(0);
+    await writeDigitalValue(0);
   };
 
   // ─── Render ────────────────────────────────────────────────────────────────
@@ -651,11 +674,11 @@ export default function App() {
             ) : (
               <>
                 {/* ── Pin 0 Analog Output Control ── */}
-                <Text style={styles.sectionTitle}>Pin 0 Analog Output</Text>
+                <Text style={styles.sectionTitle}>Pin 0 Digital Output</Text>
                 <View style={styles.analogControlCard}>
                   <View style={styles.pinInfo}>
                     <Text style={styles.pinLabel}>Pin 0</Text>
-                    <Text style={styles.pinDescription}>Analog output (0-1023)</Text>
+                    <Text style={styles.pinDescription}>Digital output (0/1)</Text>
                   </View>
 
                   <View style={styles.analogButtons}>
@@ -667,16 +690,16 @@ export default function App() {
                     <TouchableOpacity 
                       style={[styles.analogBtn, styles.analogBtnOff]} 
                       onPress={setPin0Max}>
-                      <Text style={styles.analogBtnText}>OFF (1023)</Text>
+                      <Text style={styles.analogBtnText}>OFF (1)</Text>
                     </TouchableOpacity>
                   </View>
 
                   <View style={styles.analogInfo}>
                     <Text style={styles.analogInfoText}>
-                      Press ON to set pin 0 to 0 (turns relay ON)
+                      Press ON to set pin 0 to LOW (0) - turns relay ON
                     </Text>
                     <Text style={styles.analogInfoText}>
-                      Press OFF to set pin 0 to 1023 (turns relay OFF)
+                      Press OFF to set pin 0 to HIGH (1) - turns relay OFF
                     </Text>
                   </View>
                 </View>
